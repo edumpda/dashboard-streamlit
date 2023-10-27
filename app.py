@@ -1,33 +1,37 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
+import plotly.express as px
 
-st.title('Testando Streamlit')
+# Carrega o dataset
+df = pd.read_csv('vgsales.csv')
 
-DATE_COLUMN = 'date/time'
-DATA_URL = ('https://s3-us-west-2.amazonaws.com/'
-         'streamlit-demo-data/uber-raw-data-sep14.csv.gz')
+# Define as opções de filtro
+region_options = ['NA', 'EU', 'JP', 'Other']
+platform_options = ['Wii', 'NES', 'GB', 'DS', 'X360', 'PS3', 'PS2', 'SNES', 'GBA', 'PS4']
+genre_options = ['Action', 'Sports', 'Shooter', 'Role-Playing', 'Platform']
 
-def load_data(nrows):
-    data = pd.read_csv(DATA_URL, nrows=nrows)
-    lowercase = lambda x: str(x).lower()
-    data.rename(lowercase, axis='columns', inplace=True)
-    data[DATE_COLUMN] = pd.to_datetime(data[DATE_COLUMN])
-    return data
+# Define o título da página
+st.title('Vendas de videogames')
 
-# Create a text element and let the reader know the data is loading.
-data_load_state = st.text('Loading data...')
-# Load 10,000 rows of data into the dataframe.
-data = load_data(10000)
-# Notify the reader that the data was successfully loaded.
-data_load_state.text('Loading data...done!')
+# Define os filtros
+region_filter = st.sidebar.selectbox('Região:', region_options)
+platform_filter = st.sidebar.selectbox('Plataforma:', platform_options)
+genre_filter = st.sidebar.selectbox('Gênero:', genre_options)
 
-st.subheader('Raw data')
-st.write(data)
+# Filtra os dados com base nas opções selecionadas
+filtered_df = df[(df['Platform'] == platform_filter) & (df['Genre'] == genre_filter)]
 
-st.subheader('Number of pickups by hour')
+# Agrupa os dados por ano e região e calcula as vendas totais
+grouped_df = filtered_df.groupby(['Year', 'NA_Sales', 'EU_Sales', 'JP_Sales'])[['Global_Sales']].sum().reset_index()
 
-hist_values = np.histogram(
-    data[DATE_COLUMN].dt.hour, bins=24, range=(0,24))[0]
+# Cria um gráfico de linhas com as vendas globais por ano e região
+fig = px.line(grouped_df, x='Year', y='Global_Sales', color_discrete_sequence=['blue'], title='Vendas globais de videogames')
+fig.update_layout(xaxis_title='Ano', yaxis_title='Vendas globais (milhões)')
+st.plotly_chart(fig)
 
-st.bar_chart(hist_values)
+# Cria um gráfico de barras com as vendas por região
+region_df = filtered_df.groupby(['Year'])[region_filter + '_Sales'].sum().reset_index()
+region_df.columns = ['Ano', 'Vendas']
+fig2 = px.bar(region_df, x='Ano', y='Vendas', color_discrete_sequence=['red'], title=f'Vendas de {genre_filter} na {platform_filter} em {region_filter}')
+fig2.update_layout(xaxis_title='Ano', yaxis_title=f'Vendas em {region_filter} (milhões)')
+st.plotly_chart(fig2)
