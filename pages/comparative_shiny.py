@@ -13,10 +13,7 @@ concluintes = tecnico2018[tecnico2018['Categoria da Situação'] == "Concluintes
 evadidos1 = pd.crosstab(evadidos['Renda Familiar'], evadidos['Região'])
 concluintes1 = pd.crosstab(concluintes['Renda Familiar'], concluintes['Região'])
 teste = evadidos1 / (evadidos1 + concluintes1) * 100
-dados = teste.loc[teste.index.isin([1, 2, 3, 4, 5, 7, 6])]
-print(evadidos1)
-print(teste)
-print(dados)
+dados = teste.loc[teste.index.isin(['0,5<RFP<=1,0', '0<RFP<=0,5', '1,0<RFP<=1,5', '1,5<RFP<=2,5', '2,5<RFP<=3,5', 'Não Declarada', 'RFP>3,5'])]
 
 # Define a página do Streamlit
 st.title("Taxa de Evasão nos cursos técnicos por Região")
