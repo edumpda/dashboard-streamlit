@@ -4,7 +4,7 @@ import plotly.express as px
 import numpy as np
 
 # Carrega o dataset
-df = pd.read_csv('vgsales.csv')
+df = pd.read_csv('./db/vgsales.csv')
 
 # Define as opções de filtro
 region_options = ['NA', 'EU', 'JP', 'Other']
