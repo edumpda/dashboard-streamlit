@@ -2,8 +2,15 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Carrega o arquivo Excel
-tecnico2018 = pd.read_excel("./db/tecnico2018.xlsx")
+# Função para carregar a base de dados
+@st.cache_data
+def load_data():
+    # Carrega o arquivo Excel
+    tecnico2018 = pd.read_excel("./db/tecnico2018.xlsx")
+    return tecnico2018
+
+# Carrega a base de dados usando a função em cache
+tecnico2018 = load_data()
 
 # Filtra os evadidos e concluintes
 evadidos = tecnico2018[tecnico2018['Categoria da Situação'] == "Evadidos"]
