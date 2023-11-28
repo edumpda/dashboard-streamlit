@@ -6,3 +6,5 @@ matplotlib
 openpyxl
 sqlalchemy
 scikit-learn
+joblib
+xgboost
