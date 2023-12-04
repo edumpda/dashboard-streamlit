@@ -3,20 +3,29 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import joblib
 import seaborn as sns
+import os
 
 # Função para carregar dados
-def load_data():
-    uploaded_file = st.file_uploader("Escolha um arquivo CSV", type="csv")
-    if uploaded_file is not None:
-        data = pd.read_csv(uploaded_file)
-        return data
+def load_data(path=None):
+    data = None
+    if path is not None:
+        data = pd.read_csv(path)
+    else:
+        uploaded_file = st.file_uploader("Escolha um arquivo CSV", type="csv")
+        if uploaded_file is not None:
+            data = pd.read_csv(uploaded_file)
+    return data
 
 # Função para carregar o modelo
-def load_model():
-    uploaded_file = st.file_uploader("Escolha um arquivo .joblib", type="joblib")
-    if uploaded_file is not None:
-        model = joblib.load(uploaded_file)
-        return model
+def load_model(path=None):
+    model = None
+    if path is not None:
+        model = joblib.load(path)
+    else:
+        uploaded_file = st.file_uploader("Escolha um arquivo .joblib", type="joblib")
+        if uploaded_file is not None:
+            model = joblib.load(uploaded_file)
+    return model
 
 # Função para fazer previsões
 def make_predictions(model, data):
@@ -45,16 +54,45 @@ def create_plots(data):
 def main():
     st.title('Streamlit + Chat GPT')
 
-    data = load_data()
+    if 'option' not in st.session_state:
+        st.session_state['option'] = None
 
-    if data is not None:
-        st.write(data)
+    if st.button('Subir meu próprio modelo e base'):
+        st.session_state['option'] = 'upload'
+    elif st.button('Testar modelos e bases existentes'):
+        st.session_state['option'] = 'test'
 
-        model = load_model()
+    if st.session_state['option'] == 'upload':
+        data = load_data()
 
-        if model is not None:
-            data_with_predictions = make_predictions(model, data)
-            create_plots(data_with_predictions)
+        if data is not None:
+            st.write(data)
+
+            model = load_model()
+
+            if model is not None:
+                data_with_predictions = make_predictions(model, data)
+                create_plots(data_with_predictions)
+    elif st.session_state['option'] == 'test':
+        dataset_name_placeholder = st.empty()
+        model_name_placeholder = st.empty()
+        confirm_button_placeholder = st.empty()
+
+        dataset_name = dataset_name_placeholder.selectbox(
+            'Escolha um conjunto de dados',
+            [''] + os.listdir('./db/datasets'))
+
+        if dataset_name:
+            model_name = model_name_placeholder.selectbox(
+                'Escolha um modelo',
+                [''] + os.listdir(f'./db/modelsPT/{dataset_name}'))
+
+            if model_name and confirm_button_placeholder.button('Confirmar'):
+                data = load_data(f'./db/datasets/{dataset_name}')
+                model = load_model(f'./db/modelsPT/{dataset_name}/{model_name}')
+
+                data_with_predictions = make_predictions(model, data)
+                create_plots(data_with_predictions)
 
 if __name__ == "__main__":
     main()
