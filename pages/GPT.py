@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import joblib
 import seaborn as sns
 import os
+import smokers
+
 
 # Função para carregar dados
 def load_data(path=None):
@@ -63,16 +65,17 @@ def main():
         st.session_state['option'] = 'test'
 
     if st.session_state['option'] == 'upload':
-        data = load_data()
+        data = smokers.load_data()
 
         if data is not None:
             st.write(data)
 
-            model = load_model()
+            model = smokers.train_model(data)
 
             if model is not None:
-                data_with_predictions = make_predictions(model, data)
-                create_plots(data_with_predictions)
+                data_with_predictions = smokers.make_predictions(model, data)
+                fig = smokers.create_plots(data_with_predictions)
+                st.pyplot(fig)
     elif st.session_state['option'] == 'test':
         dataset_name_placeholder = st.empty()
         model_name_placeholder = st.empty()
@@ -88,11 +91,12 @@ def main():
                 [''] + os.listdir(f'./db/modelsPT/{dataset_name}'))
 
             if model_name and confirm_button_placeholder.button('Confirmar'):
-                data = load_data(f'./db/datasets/{dataset_name}')
-                model = load_model(f'./db/modelsPT/{dataset_name}/{model_name}')
+                data = smokers.load_data(f'./db/datasets/{dataset_name}')
+                model = smokers.load_model(f'./db/modelsPT/{dataset_name}/{model_name}')
 
-                data_with_predictions = make_predictions(model, data)
-                create_plots(data_with_predictions)
+                data_with_predictions = smokers.make_predictions(model, data)
+                fig = smokers.create_plots(data_with_predictions)
+                st.pyplot(fig)
 
 if __name__ == "__main__":
     main()
